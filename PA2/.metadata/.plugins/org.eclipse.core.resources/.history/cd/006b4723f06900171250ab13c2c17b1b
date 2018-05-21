@@ -1,0 +1,83 @@
+/*
+ * Lex.c
+ *
+ *  Created on: Jul 15, 2017
+ *      Author: chend
+ */
+#include <stdlib.h>
+#include <stdio.h>
+#include <string.h>
+#include "List.h"
+
+int main ( int args, char *argv[] ) {
+	int count = 0;
+	int lines = 0;
+	FILE *in, *out;
+	char line[255];
+
+
+	in = fopen(argv[1], "read");
+	out = fopen(argv[2], "write");
+
+	if (args != 3) {
+		printf ("Invalid input\n");
+		exit(1);
+	}
+
+	while (fgets(line, 255, in) != NULL) {
+		lines ++;
+	}
+
+	fclose(in);
+	in = fopen(argv[1], "read");
+
+	char** array = malloc(sizeof(char**) * lines);
+	for(int i = 0; i < lines; i++){
+		fgets(line, 255, in);
+
+		char *f = malloc(strlen(line) + 1);
+		if (f== NULL) {
+			array[i] = f;
+		}else{
+			strcpy(f,line);
+			array[i] = f;
+		}
+	}
+
+
+
+
+	List A = newList();
+		append(A,0);
+		moveFront(A);
+
+		for(int i = 1; i<lines;i++){
+			moveFront(A);
+			char* word = array[i];
+			char* curr = array[get(A)];
+
+			while(index(A)>=0){
+				if(strcmp(word,curr)>0){
+					moveNext(A);
+					curr = array[get(A)];
+					if(get(A)<0){
+						break;
+					}
+				}else{
+					insertBefore(A,i);
+					break;
+				}
+			}
+			if(get(A)<0) {
+				append(A,i);
+			}
+		}
+
+		   moveFront(A);
+
+		   //print out final data
+		   for(int i = 0; i <length-1; i++){
+			  fprintf(out, array[get(A)]);
+			   moveNext(A);
+	}
+}

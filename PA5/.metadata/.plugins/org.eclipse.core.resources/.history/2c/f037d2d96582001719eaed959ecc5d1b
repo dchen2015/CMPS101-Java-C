@@ -1,0 +1,91 @@
+//Katerina Chinnappan
+//CruzID: kachinna
+//PA 5
+//Based on PA4 IO
+
+#include<stdio.h>
+#include<stdlib.h>
+#include<string.h>
+
+#include "Graph.h"
+#include <stdbool.h>
+
+#define MAX_LEN 250
+
+int main(int argc, char* argv[]) {
+	FILE *in, *out;
+	in = fopen(argv[1], "r");
+	out = fopen(argv[2], "w");
+
+	int order; //get the Order of the graph
+	fscanf(in, "%d", &order);
+	Graph G = newGraph(order);
+
+	int vertex, adj; //read in the graph before 0 0
+	fscanf(in, "%d %d", &vertex, &adj);
+	while (!(vertex == 0 && adj == 0)) {
+		addArc(G, vertex, adj);
+		fscanf(in, "%d %d", &vertex, &adj);
+	}
+
+	List L = newList();
+	for (int i = 1; i <= getOrder(G); i++) {
+		append(L, i);
+	}
+
+	DFS(G, L);
+	Graph T = transpose(G);
+	DFS(T, L);
+
+	// find number of strongly connected components
+	int scc = 0;
+	moveFront(L);
+	while (index(L) >= 0) {
+		if (getParent(G, get(T)) == NIL) {
+			scc++;
+		}
+		moveNext(L);
+	}
+
+	List Lscc[scc];
+	int i;
+	for (i = 0; i < scc; i++) {
+		Lscc[i] = newList();
+	}
+
+	moveFront(L);
+	int list = scc;
+	while (index(L) >= 0) {
+		if (getParent(T, get(L)) == NIL)
+			list--;
+		if (list == scc)
+			break;
+		append(Lscc[list], get(L));
+		moveNext(L);
+	}
+
+	/*****Print the adjacency list representation of G to the output file.*****/
+	fprintf(out, "Adjacency list representation of G:\n");
+	printGraph(out, G);
+
+	/*****Determine the strong components of G*****/
+	fprintf(out, "\nG contains %d strongly connected components:", scc);
+	int m;
+	for (m = 0; m < scc; m++) {
+		/*****Print the strong components of G to the output file in topologically sorted order.*****/
+		fprintf(out, "\nComponent %d: ", (m + 1));
+		printList(out, Lscc[m]);
+		freeList(&(Lscc[m]));
+	}
+	printf("Success, output file created \n");
+
+	/*****free graph and list****/
+	freeGraph(&G);
+	freeGraph(&T);
+	freeList(&L);
+
+	/**** close files ****/
+	fclose(in);
+	fclose(out);
+	return (0);
+}

@@ -1,0 +1,280 @@
+//Jason Chen
+//Jadchen 1467583
+//PA4
+
+#include<stdio.h>
+#include<stdlib.h>
+#include "Graph.h"
+
+#define WHITE 1
+#define GRAY 2
+#define BLACK 3
+
+typedef struct GraphObj {
+	List* adj;
+	char* color;
+	int* parent;
+	int* discover;
+	int* finish;
+	int order;
+	int size;
+	int time;
+
+} GreaphObj;
+
+/*** Constructors-Destructors ***/
+Graph newGraph(int n) {
+	Graph graph = malloc(sizeof(struct GraphObj));
+	graph->adj = calloc(n + 1, sizeof(List));
+	graph->color = calloc(n + 1, sizeof(int));
+	graph->parent = calloc(n + 1, sizeof(int));
+	graph->discover = calloc(n + 1, sizeof(int));
+	graph->finish = calloc(n + 1, sizeof(int));
+	graph->order = n;
+	graph->size = 0;
+	graph->time = UNDEF;
+
+	for (int i = 1; i <= n; i++) {
+		graph->adj[i] = newList();
+		graph->color[i] = WHITE;
+		graph->parent[i] = NIL;
+		graph->discover[i] = UNDEF;
+		graph->finish[i] = UNDEF;
+	}
+	return graph;
+}
+
+void freeGraph(Graph* pG) {
+	for (int i = 1; i <= getOrder(*pG); i++) { //free each list in adj
+		freeList(&(*pG)->adj[i]);
+		free((*pG)->adj[i]);
+	}
+	free((*pG)->adj);
+	free((*pG)->color);
+	free((*pG)->discover);
+	free((*pG)->finish);
+	free((*pG)->parent);
+	(*pG)->adj = NULL;
+	(*pG)->color = NULL;
+	(*pG)->parent = NULL;
+	(*pG)->discover = NULL;
+	(*pG)->finish = NULL; //free pointers
+
+	free(*pG);
+	*pG = NULL; //free graph
+}
+
+/*** Access functions ***/
+int getOrder(Graph G) {
+	if (G == NULL) {
+		fprintf(stderr, "Graph is NULL");
+		exit(1);
+	} else {
+		return G->order;
+	}
+}
+
+int getSize(Graph G) {
+	if (G == NULL) {
+		fprintf(stderr, "Graph is NULL");
+		exit(1);
+	} else {
+		return G->size;
+	}
+}
+
+int getParent(Graph G, int u) {
+	if (G == NULL) {
+		fprintf(stderr, "Graph is NULL");
+		exit(1);
+	} else if (u > (G->order) || u < 1) {
+		fprintf(stderr, "Such vertex does not exist");
+		exit(1);
+	} else {
+		return G->parent[u];
+	}
+}
+
+int getDiscover(Graph G, int u) {
+	if (G == NULL) {
+		fprintf(stderr, "Graph is NULL");
+		exit(1);
+	} else if (u > (G->order) || u < 1) {
+		fprintf(stderr, "Such vertex does not exist");
+		exit(1);
+	} else {
+		return G->discover[u];
+	}
+}
+
+int getFinish(Graph G, int u) {
+	if (G == NULL) {
+		fprintf(stderr, "Graph is NULL");
+		exit(1);
+	} else if (u > (G->order) || u < 1) {
+		fprintf(stderr, "Such vertex does not exist");
+		exit(1);
+	} else {
+		return G->finish[u];
+	}
+}
+
+void addEdge(Graph G, int u, int v) {
+	if (G == NULL) {
+		fprintf(stderr, "Graph is NULL");
+		exit(1);
+	} else if (u > (G->order) || u < 1) {
+		if (v > (G->order) || v < 1) {
+			fprintf(stderr, "Such vertex does not exist");
+			exit(1);
+		}
+	} else {
+		addArc(G, u, v); //a edge is 2 arcs
+		addArc(G, v, u);
+		G->size--; //remove 1 size for addArc has been called twice
+	}
+}
+
+void addArc(Graph G, int u, int v) {
+	if (G == NULL) {
+		fprintf(stderr, "Graph is NULL");
+		exit(1);
+	} else if (u > (G->order) || u < 1) {
+		if (v > (G->order) || v < 1) {
+			fprintf(stderr, "Such vertex does not exist");
+			exit(1);
+		}
+	} else {
+		moveFront(G->adj[u]);
+		while (index(G->adj[u]) > -1 && v > get(G->adj[u])) { //find where this vertex belongs
+			moveNext(G->adj[u]);
+		}
+		if (index(G->adj[u]) == -1) { //append if fallen off the list
+			append(G->adj[u], v);
+		} else {
+			insertBefore(G->adj[u], v); //insert if spot found
+		}
+		G->size++;
+	}
+}
+
+void Visit(Graph G, int x, List L) {
+	if (G == NULL) {
+		fprintf(stderr, "Invalid: cannot call Visit(Graph G, int x, List L)");
+		exit(1);
+	}
+	int y;
+	//color[x] = gray
+	G->color[x] = GRAY;
+	//d[x] = (++time)
+	G->time++;
+	G->discover[x] = G->time;
+	List S = G->adj[x];
+	//for all y belong to all adj[x]
+	for (moveFront(S); index(S) != -1; moveNext(S)) {
+		y = get(S);
+
+		//if color[y] == white
+		if (G->color[y] == WHITE) {
+			//p[y] = x
+			G->parent[y] = x;
+			//Visit(G, y, L
+			Visit(G, y, L);
+		}
+	}
+
+	//color[x] = black
+	G->color[x] = BLACK;
+	//f[x] = (++time)
+	G->time++;
+	G->finish[x] = G->time;
+	prepend(L, x);
+}
+
+//performs the depth first search algorithm on G
+void DFS(Graph G, List S) {
+	if (G == NULL) {
+		fprintf(stderr, "Invalid: cannot call DFS(Graph G, List S)");
+		exit(1);
+	}
+
+	if (length(S) != getOrder(G)) {
+		printf("Invalid: cannot call DFS() without equal sizes\n");
+		exit(1);
+	}
+
+	List temp = copyList(S);
+	clear(S);
+	int i;
+	int x;
+	//for all x in V
+	for (i = 1; i < G->order; i++) {
+		//color[x] =  white
+		G->color[i] = WHITE;
+		//p[x] = nil
+		G->parent[i] = NIL;
+		//d[x] = undefined
+		G->discover[i] = UNDEF;
+		//f[x] = undefined
+		G->finish[i] = UNDEF;
+	}
+	//time = 0
+	G->time = 0;
+
+	//for all x in V
+	for (moveFront(temp); index(temp) != -1; moveNext(temp)) {
+		x = get(temp);
+		//if color[x] == white
+		if (G->color[x] == WHITE) {
+			//Visit(G, x, S)
+			Visit(G, x, S);
+		}
+	}
+	freeList(&temp);
+
+}
+
+/* Other Functions */
+Graph transpose(Graph G) {
+	if (G == NULL) {
+		fprintf(stderr, "Graph is NULL");
+		exit(1);
+	}
+	Graph Transpose = newGraph(getOrder(G));
+	for (int i = 1; i <= getOrder(G); i++) {
+		moveFront(G->adj[i]);
+		while (index(G->adj[i]) > -1) {
+			addArc(Transpose, get(G->adj[i]), i);
+		}
+	}
+	return Transpose;
+}
+
+Graph copyGraph(Graph G) {
+	if (G == NULL) {
+		fprintf(stderr, "Graph is NULL");
+		exit(1);
+	}
+	Graph copy = newGraph(G->order);
+	for (int i = 0; i <= G->order; i++) {
+		moveFront(G->adj[i]);
+		while (index(G->adj[i]) > -1) {
+			addArc(copy, i, get(G->adj[i]));
+		}
+	}
+	return copy;
+}
+
+/*** Other operations ***/
+void printGraph(FILE* out, Graph G) {
+	if (G == NULL) {
+		fprintf(stderr, "Graph is NULL");
+		exit(1);
+	} else {
+		for (int i = 1; i <= G->order; i++) {
+			fprintf(out, "%d: ", i);
+			printList(out, G->adj[i]);
+			fprintf(out, "\n");
+		}
+	}
+}

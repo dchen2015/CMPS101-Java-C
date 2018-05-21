@@ -1,0 +1,289 @@
+//Jason Chen
+//Jadchen 1467583
+//PA3
+
+public class Matrix {
+	private class Entry {
+		int col;
+		double val;
+
+		Entry(int Col, double Val) {
+			col = Col;
+			val = Val;
+		}
+
+		public String toString() {//overwrite the original tostring method 
+			return "(" + col + ", " + val + ")";
+		}
+
+		public boolean equals(Entry temp) {//check if two Entries are identical
+			if (val == temp.val && col == temp.col) {
+				return true;
+			}
+			return false;
+		}
+	}
+
+	int size = 0;
+	List[] row;
+
+	// Constructor
+	Matrix(int n) {//create Matrix
+		if (n < 1) {
+			throw new RuntimeException("Matrix size must be a positive integer");
+		}
+		size = n;
+		row = new List[size + 1];
+		for (int i = 1; i <= size; i++) {
+			row[i] = new List();
+		}
+	}
+
+	// Access functions
+	int getSize() {// Returns n, the number of rows and columns of this Matrix
+		return size;
+	}
+
+	int getNNZ() {// Returns the number of non-zero entries in this Matrix
+		int NNZ = 0;
+		for (int i = 1; i <= size; i++) {
+			NNZ += row[i].length();
+		}
+		return NNZ;
+	}
+
+	public boolean equals(Object x) {// overrides Object's equals() method
+		 Matrix temp = new Matrix(size);
+		 if (!(x instanceof Matrix)) {//return false if it is not a Matrix
+			 return false;
+		 }
+		 temp = (Matrix) x;
+		 if (temp.getSize() != size) {//return false if the size of two matrixes do match
+			 return false;
+		 }
+		 for (int i = 1; i <= size; i++) {
+			 if (row[i].length() != temp.row[i].length()) {//return false if two lists have different length
+				 return false;
+			 }
+			 row[i].moveFront();
+			 temp.row[i].moveFront();
+			 while (row[i].index() >= 0 && temp.row[i].index() >=0) {
+				 if (!((Entry) row[i].get()).equals((Entry)temp.row[i].get())) {//return false if any Entry is different
+					 return false;
+				 }
+				 row[i].moveNext();
+				 temp.row[i].moveNext();
+			 }
+		 }
+		 return true;//return true if no false is detected
+	 }
+
+	// Manipulation procedures
+	void makeZero() {// sets this Matrix to the zero state
+		for (int i = 0; i < row.length; i++) {
+			row[i] = new List();
+		}
+	}
+
+	Matrix copy() {// returns a new Matrix having the same entries as this
+					// Matrix
+		Matrix temp = new Matrix(size);
+		for (int i = 1; i <= size; i++) {
+			if (row[i].length() > 0) {
+				row[i].moveFront();
+				while (row[i].index() >= 0) {
+					Entry tempEntry = new Entry(((Entry) row[i].get()).col,
+							((Entry) row[i].get()).val);
+					row[i].moveNext();
+					temp.row[i].append(tempEntry);
+				}
+			}
+		}
+		return temp;
+	}
+
+	void changeEntry(int i, int j, double x) {// changes ith row, jth column of
+												// this Matrix to x, pre:
+												// 1<=i<=getSize(),
+												// 1<=j<=getSize()
+		if (i < 0 || i > size || j < 0 || j > size) {
+			throw new RuntimeException(
+					"Column and rows must be greater than 0 and less than matrix size");
+		}
+		if (row[i].length() > 0) {//if the list is not empty
+			row[i].moveFront();
+			while (row[i].index() >= 0 && ((Entry) row[i].get()).col < j) {//move to the entry that is equal or just above the temp
+				row[i].moveNext();
+			}
+			if (row[i].index() >= 0) {
+				if (((Entry) row[i].get()).col == j) {//case 1
+					if (x != 0) {
+						((Entry) row[i].get()).val = x;
+					} else {
+						row[i].delete();
+					}
+				} else if (((Entry) row[i].get()).col > j) {//case 2
+					if (x != 0) {
+						Entry temp = new Entry(j, x);
+						row[i].insertAfter(temp);
+					}
+				} else {//case 3
+					if (x != 0) {
+						Entry temp = new Entry(j, x);
+						row[i].insertBefore(temp);
+					}
+				}
+			} else {//if fall off the end of the list
+				if (x != 0) {
+					Entry temp = new Entry(j, x);
+					row[i].append(temp);
+				}
+			}
+		} else {//if the list is empty
+			if (x != 0) {
+				Entry temp = new Entry(j, x);
+				row[i].append(temp);
+			}
+		}
+	}
+
+	Matrix scalarMult(double x) {// returns a new Matrix that is the scalar
+									// product of this Matrix with x
+		Matrix temp = copy();
+		for (int i = 1; i < size; i++) {
+			if (temp.row[i].length() > 0) {
+				temp.row[i].moveFront();
+				while (temp.row[i].index() >= 0) {
+					((Entry) temp.row[i].get()).val = x
+							* ((Entry) temp.row[i].get()).val;
+					temp.row[i].moveNext();
+				}
+			}
+		}
+		return temp;
+	}
+
+	Matrix add(Matrix M) {
+		if (this.getSize() != M.getSize()) {
+			throw new RuntimeException(
+					"Matrix Error: add() called on matrices of differing size");
+		}
+		Matrix temp = copy();
+		Matrix temp2 = M.copy();//avoid case when M = Current
+		for (int i = 1; i < size; i++) {
+			if (temp2.row[i].length() > 0) { //find the numbers in M in order
+				temp2.row[i].moveFront();
+				while (temp2.row[i].index() >= 0) {
+					double a = ((Entry) temp2.row[i].get()).val; //record the first number in M
+					if (row[i].length() > 0) {
+						row[i].moveFront();
+						while (row[i].index() >= 0) {
+							if (((Entry) row[i].get()).col == ((Entry) temp2.row[i]
+									.get()).col) {
+								a += ((Entry) row[i].get()).val; //if there is a number in current has same column
+								break;							//add that value to a
+							}
+							row[i].moveNext();
+						}
+					}
+					temp.changeEntry(i, ((Entry) temp2.row[i].get()).col, a);
+					temp2.row[i].moveNext();
+				}
+			}
+		}
+		return temp;
+	}
+
+	Matrix sub(Matrix M) {// returns a new Matrix that is the difference of this
+							// Matrix with M, pre: getSize()==M.getSize()
+		if (this.getSize() != M.getSize()) {
+			throw new RuntimeException(
+					"Matrix Error: add() called on matrices of differing size");
+		}
+		Matrix temp = copy();
+		Matrix temp2 = M.copy();//avoid case when M = Current
+		for (int i = 1; i < size; i++) {
+			if (temp2.row[i].length() > 0) { //find the numbers in M in order
+				temp2.row[i].moveFront();
+				while (temp2.row[i].index() >= 0) {
+					double a = -1 * ((Entry) temp2.row[i].get()).val; //record the first number in M
+					if (row[i].length() > 0) {
+						row[i].moveFront();
+						while (row[i].index() >= 0) {
+							if (((Entry) row[i].get()).col == ((Entry) temp2.row[i]
+									.get()).col) {
+								a += ((Entry) row[i].get()).val; //if there is a number in current has same column
+								break;							//add that value to a
+							}
+							row[i].moveNext();
+						}
+					}
+					temp.changeEntry(i, ((Entry) temp2.row[i].get()).col, a);
+					temp2.row[i].moveNext();
+				}
+			}
+		}
+		return temp;
+	}
+
+	Matrix transpose() {// returns a new Matrix that is the transpose of this
+						// Matrix
+		Matrix temp = new Matrix(size);
+		for (int i = 1; i <= size; i++) {
+			row[i].moveFront();
+			while (row[i].index() >= 0) {
+				temp.changeEntry(((Entry) row[i].get()).col, i,
+						((Entry) row[i].get()).val);
+				row[i].moveNext();
+			}
+		}
+		return temp;
+	}
+
+	Matrix mult(Matrix M) {// returns a new Matrix that is the product of this
+							// Matrix with M, pre: getSize()==M.getSize()
+		if (this.getSize() != M.getSize()) {
+			throw new RuntimeException(
+					"Cannot add multiply matrixes with difference size");
+		}
+		Matrix temp = copy();
+		Matrix temp2 = M.transpose(); //transpose M to do dot product
+		Matrix product = new Matrix(size);
+		for (int i = 1; i < size; i++) {
+			for (int j = 1; j < size; j++) {
+				double dot = 0;
+				if (temp.row[i].length() > 0) {
+					temp.row[i].moveFront();
+					while (temp.row[i].index() >= 0) {
+						if (temp2.row[j].length() > 0) {
+							temp2.row[j].moveFront();
+							while (temp2.row[j].index() >= 0) {//multiply numbers with same column and row and add up the value
+								if (((Entry) temp.row[i].get()).col == ((Entry) temp2.row[j]
+										.get()).col) {
+									dot += ((Entry) temp.row[i].get()).val
+											* ((Entry) temp2.row[j].get()).val;
+								}
+								temp2.row[j].moveNext();
+							}
+						}
+						temp.row[i].moveNext();
+					}
+				}
+				if (dot != 0) {
+					product.changeEntry(i, j, dot);
+				}
+			}
+		}
+		return product;
+	}
+
+	public String toString() {// overrides Object's toString() method
+		String str = "";
+		for (int i = 1; i <= size; i++) {
+			if (row[i].length() > 0) {
+				str = (str + i + ": " + row[i].toString() + "\n");
+			}
+		}
+		return str;
+	}
+}

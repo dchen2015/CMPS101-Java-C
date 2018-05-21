@@ -1,0 +1,99 @@
+// Minghao Liu
+// mliu40
+// PA2  Lex.c
+
+
+#include<stdio.h>
+#include<stdlib.h>
+#include<string.h>
+#include "List.h"
+
+#define MAX_LEN 200
+#define BUFFER 200
+
+
+
+int main(int argc, char * argv[]){
+	char line[BUFFER];
+	int length = 0;
+	if(argc != 3) {
+		printf("Invalid number of files to work with");
+		exit(1);
+	}
+
+	FILE* in = fopen(argv[1], "r");//the actual one for data input
+	FILE* in2 = fopen(argv[1], "r");//just for counting
+	FILE* out = fopen(argv[2], "w");//data output
+
+	while( fgets(line, BUFFER, in2) != NULL) {
+	    length++;
+	  }
+
+//load data from file to array
+	char** array = malloc(sizeof(char**) * length);
+	for(int i = 0; i < length; i++){
+		fgets(line, BUFFER, in);
+
+		char *f = malloc(strlen(line) + 1);
+		  if (f== NULL) {
+			  array[i] = f;
+		  }else{
+			  strcpy(f,line);
+			  array[i] = f;
+		  }
+
+	}
+//----------------we get array--------------
+
+	List A = newList();
+	append(A,0);
+	moveFront(A);
+
+	for(int i = 1; i<length;i++){
+		moveFront(A);
+		char* word = array[i];
+		char* curr = array[get(A)];
+
+		while(index(A)>=0){
+			if(strcmp(word,curr)>0){
+				moveNext(A);
+				curr = array[get(A)];
+				if(get(A)<0){
+					break;
+				}
+			}else{
+				insertBefore(A,i);
+				break;
+			}
+		}
+		if(get(A)<0) {
+			append(A,i);
+		}
+	}
+
+	   moveFront(A);
+
+	   //print out final data
+	   for(int i = 0; i <length-1; i++){
+		  fprintf(out, array[get(A)]);
+		   moveNext(A);
+	   }
+	   //fprintf(out,"\n");
+	   fprintf(out, array[get(A)]);
+
+
+	   fclose(in);
+	   fclose(in2);
+	   fclose(out);
+
+
+
+	   for (int i = 0; i < length; i++){
+	       free(array[i]);
+	     }
+	   free(array);
+	   freeList(&A);
+	   return(0);
+
+}
+

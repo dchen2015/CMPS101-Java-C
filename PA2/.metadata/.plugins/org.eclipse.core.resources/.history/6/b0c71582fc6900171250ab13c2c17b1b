@@ -1,0 +1,69 @@
+//Jason Chen
+//Jadchen 1467583
+//PA2
+
+#include <stdlib.h>
+#include <stdio.h>
+#include <string.h>
+#include "List.h"
+
+int main ( int args, char *argv[] ) {
+	char line[255];
+	int lines = 0;
+	//Open in and out file
+	FILE *in, *out;
+	in = fopen(argv[1], "r");
+	out = fopen(argv[2], "w");
+
+	//Run through the input file to get lines
+	while (fgets(line, 255, in) != NULL) {
+		lines ++;
+	}
+
+	//Reopen the input file
+	fclose(in);
+	in = fopen(argv[1], "r");
+
+	//Create an array with the size of the number of lines
+	char array[lines - 1][255];
+	int count = 0;
+
+	////Run through the input file to copy the lines into array as strings
+	while(fgets(line, 255, in) != NULL) {
+		strcpy(array[count++], line);
+	}
+
+	//Start Insertion sort
+	List list = newList();
+	append(list, 0);	//Append an 0 to ensure it start comparing from the 1st element in array
+	for (int i = 1; i < lines; i++) {
+		int j = 0;
+		moveBack(list);	//Move to the newest inserted index
+		while (j < i && strcmp(array[i], array[get(list)]) <= 0) { //compare the left most unsorted with the right most sorted
+			movePrev(list); //Move the sorted index left if smaller
+			j ++;
+		}
+		if(index(list) != -1) {	//Insert if spot found
+			insertAfter(list, i);
+		} else {	//If no spot found, meaning it is the smallest and should be prepended in the front
+			prepend (list, j);
+		}
+	}
+
+	//Print function
+	moveFront(list);
+	for(moveFront(list); index(list) >= 0; moveNext(list)){
+		fprintf(out, array[get(list)]);
+	}
+
+	//Free memory
+	for (int i = 0; i < lines; i++) {
+		free(array[i]);
+	}
+	clear(list);
+	freeList(&list);
+
+	//close file
+	fclose(in);
+	fclose(out);
+}

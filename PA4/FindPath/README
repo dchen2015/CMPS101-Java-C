@@ -1,0 +1,14 @@
+List.c
+is the advanced array to store objects, in this case, ints. Every single object knows who its previous and next object is. Exactly the same from PA2
+
+Graph.h
+a way to store connected vertices (graph). Store vertices in adjacent list that has a array of lists that each list contains all neighbor of ith vertex in array. Then offers a special way of organizing this graph called BFS, which is directly translated from BFS pseudocode in Midterm2 to C
+
+FindPath.c
+The main program that reads in the connected vertices and calculates the shortest path by BFS method provided in Graph.c
+
+GraphTest.c
+A way to test all the special cases of graph to ensure the recorded graph is accurate. 
+
+Makefile
+Compile files into Findpath.exe

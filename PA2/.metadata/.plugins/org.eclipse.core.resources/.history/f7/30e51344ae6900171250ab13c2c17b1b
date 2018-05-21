@@ -1,0 +1,109 @@
+/*
+ * List.c
+ *
+ *  Created on: Jul 15, 2017
+ *      Author: chend
+ */
+
+#include <stdlib.h>
+#include <stdio.h>
+#include "List.h"
+
+typedef struct NodeObj {
+	struct NodeObj* next;
+	struct NodeObj* prev;
+	int data;
+} NodeObj;
+
+typedef NodeObj* Node;
+
+typedef struct ListObj {
+	Node front;
+	Node cursor;
+	Node back;
+	int index;
+	int length;
+} ListObj;
+
+Node newNode(int data) {
+    Node temp = malloc(sizeof(NodeObj));
+    temp -> data = data;
+    temp -> prev = NULL;
+    temp -> next = NULL;
+    return (temp);
+}
+
+void freeNode(Node *temp) {
+    if (temp != NULL && *temp != NULL) {
+        free(*temp);
+        *temp = NULL;
+    }
+}
+
+// Constructors-Destructors
+List newList (void) {
+	List temp = malloc(sizeof(ListObj));
+	temp -> front = NULL;
+	temp -> cursor = NULL;
+	temp -> back = NULL;
+	temp -> length = 0;
+	temp -> index = -1;
+	return temp;
+}
+
+void freeList (List* temp) {
+	if (temp != NULL && *temp != NULL) {
+		Node tempNode = (*temp) -> front;
+		while (tempNode != NULL) {
+			Node tempNode2 = tempNode;
+			tempNode = tempNode -> next;
+			free(tempNode2);
+		}
+		free(*temp);
+		*temp = NULL;
+	}
+}
+
+
+//Access Functions
+int length(List L) {
+    return L -> length;
+}
+
+int index(List L) {
+	if (L -> cursor != NULL) {
+		return L -> index;
+	} else {
+		return -1;
+	}
+}
+
+int front(List L) {
+    if (L -> length > 0) {
+        return L->front->data;
+    } else {
+    	printf("List Error: List is empty\n");
+    	exit(1);
+    }
+}
+
+int back(List L) {
+    if (L->length > 0) {
+        return L->back->data;
+    } else {
+    	printf("List Error: List is empty\n");
+    	exit(1);
+    }
+}
+
+int get(List L) {
+    if (L -> length < 1) {
+    	printf("List Error: List is empty\n");
+    	exit(1);
+    } else
+    if (L -> index() < 0) {
+    	printf("List Error: Undefined index\n");
+		exit(1);
+    } else
+    return L->cursor->data;
+}

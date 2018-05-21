@@ -1,0 +1,22 @@
+List.c
+is the advanced array to store objects, in this case, ints. Every single object knows who its previous and next object is. Exactly the same from PA2
+
+List.h
+header file for List.c which have all the names of the functions.
+
+Graph.c
+a way to store connected vertices (graph). Store vertices in adjacent list that has a array of lists that each list contains all neighbor of ith vertex in array. 
+Then offers a special way of organizing this graph called DFS, which is almost a direct translate from the DFS provided in midterm2 but added finished and discovered.
+
+Graph.h
+header file for Graph.c which have all the names of the functions.
+
+FindComponents.c
+The main program that reads in the connected vertices and calculates the strongly connected components of the graph.
+It first transpose the graph and do DFS to every unknown vertices. Then it creats a list of scc for output printing. 
+
+GraphTest.c
+A way to test all the special cases of graph to ensure the recorded graph is accurate. 
+
+Makefile
+Compile files into Findpath.exe

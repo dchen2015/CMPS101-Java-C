@@ -1,0 +1,53 @@
+/*
+ * Lex.c
+ *
+ *  Created on: Jul 15, 2017
+ *      Author: chend
+ */
+#include <stdlib.h>
+#include <stdio.h>
+#include <string.h>
+#include "List.h"
+
+int main ( int args, char *argv[] ) {
+	char line[255];
+	int lines = 0;
+	FILE *in, *out;
+	in = fopen(argv[1], "r");
+	out = fopen(argv[2], "w");
+
+	while (fgets(line, 255, in) != NULL) {
+		lines ++;
+	}
+
+	fclose(in);
+	in = fopen(argv[1], "r");
+
+	char array[lines - 1][255];
+	int count = 0;
+	while(fgets(line, 255, in) != NULL) {
+		strcpy(array[count++], line);
+	}
+
+	List list = newList();
+	append(list, 0);
+	for (int i = 1; i < lines; i++) {
+		int j = 0;
+		moveBack(list);
+		while (j < i && strcmp(array[i], array[get(list)]) <= 0) {
+			movePrev(list);
+			j ++;
+		}
+		if(index(list) != -1) {
+			insertAfter(list, i);
+		} else {
+			prepend (list, j);
+		}
+	}
+
+	moveFront(list);
+	for (int j = 1; j < lines; j++) {
+		fprintf(out, "%s", array[get(list)]);
+		        moveNext(list);
+	}
+}

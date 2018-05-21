@@ -1,0 +1,70 @@
+#include<stdio.h>
+#include<stdlib.h>
+#include<string.h>
+
+#include "List.h"
+
+#define MAX_LEN 160
+
+int main(int argc, char* argv[]) {
+    // Throws error if wrong number of args
+    if(argc != 3) {
+        fprintf(stderr, "Usage: %s <input file> <output file>\n", argv[0]);
+        exit(1);
+    }
+
+    int n = 0;
+    char line[MAX_LEN]; //dest
+    FILE *in, *out;
+    in = fopen(argv[1], "r");
+    out = fopen(argv[2], "w");
+
+    if(in == NULL) {
+        fprintf(stderr, "Unable to open file %s for reading\n", argv[1]);
+        exit(1);
+    }
+    if(out == NULL) {
+        fprintf(stderr, "Unable to open file %s for writingn\n", argv[2]);
+        exit(1);
+    }
+
+    // Counting number of lines
+    while(fgets(line, MAX_LEN, in) != NULL) {
+        n++;
+    }
+    rewind(in); //rewinds reader back to start of input file
+    char lines[n - 1][MAX_LEN];
+    int l = 0;
+
+    while(fgets(line, MAX_LEN, in) != NULL) {
+        strcpy(lines[l++], line);
+    }
+
+    // Sorting algorithm similar to insertion sort
+    List list = newList();
+    int i;
+    append(list, 0);
+    for(int j = 1; j < n; j++) {
+        i = j - 1;
+        char *tmp = lines[j];
+        moveBack(list);
+        while(i >= 0 && strcmp(tmp, lines[get(list)]) <= 0) {
+            movePrev(list);
+            i--;
+        }
+        if(index(list) >= 0) insertAfter(list, j);
+        else prepend(list, j);
+    }
+
+    // Writing to output file
+    moveFront(list);
+    while(index(list) >= 0) {
+        fprintf(out, "%s", lines[get(list)]);
+        moveNext(list);
+    }
+
+    fclose(in);
+    fclose(out);
+    freeList(&list);
+    return(0);
+}

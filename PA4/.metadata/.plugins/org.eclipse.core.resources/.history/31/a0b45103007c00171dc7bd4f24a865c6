@@ -1,0 +1,54 @@
+//
+// Created by E on 11/7/16.
+//
+
+#include <stdio.h>
+#include <stdlib.h>
+#include "Graph.h"
+
+int main(int argc, char* argv[]) {
+	FILE *in, *out;
+	in = fopen(argv[1], "r");
+	out = fopen(argv[2], "w");
+
+	int order;
+	fscanf(in, "%d", &order);
+	Graph G = newGraph(order);
+
+	int vertex, adj;
+	fscanf(in, "%d %d", &vertex, &adj);
+	while (!(vertex == 0 && adj == 0)) {
+		addEdge(G, vertex, adj);
+		fscanf(in, "%d %d", &vertex, &adj);
+	}
+
+	printGraph(out, G);
+
+	List L = newList();
+	int source, dest;
+	// read all the lines of the input file
+	fscanf(in, "%d %d", &vertex, &adj);
+	while (!(vertex == 0 && adj == 0)) {
+		BFS(G, source);
+		getPath(L, G, dest);
+		if (length(L) == 0) {
+			fprintf(out, "\nThe distance from %d to %d is infinity\n", source,
+					dest);
+			fprintf(out, "No %d-%d path exists\n", source, dest);
+		} else {
+			fprintf(out, "\nThe distance from %d to %d is %d\n", source, dest,
+					getDist(G, dest));
+			fprintf(out, "A shortest %d-%d path is: ", source, dest);
+			printList(out, L);
+			fprintf(out, "\n");
+		}
+		clear(L);
+		fscanf(in, "%d %d", &vertex, &adj);
+	}
+
+	//free the memory! no memory leaks !
+	freeGraph(&G);
+	freeList(&L);
+	fclose(in);
+	fclose(out);
+}

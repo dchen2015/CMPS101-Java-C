@@ -1,0 +1,64 @@
+/*
+ * List.c
+ *
+ *  Created on: Jul 15, 2017
+ *      Author: chend
+ */
+
+#include <stdlib.h>
+#include <stdio.h>
+#include "List.h"
+
+typedef struct NodeObj {
+	struct NodeObj* next;
+	struct NodeObj* prev;
+	int data;
+} NodeObj;
+
+typedef NodeObj* Node;
+
+typedef struct ListObj {
+	Node front;
+	Node cursor;
+	Node back;
+	int index;
+	int length;
+} ListObj;
+
+Node newNode(int data) {
+    Node temp = malloc(sizeof(NodeObj));
+    temp -> data = data;
+    temp -> prev = NULL;
+    temp -> next = NULL;
+    return (temp);
+}
+
+List newList (void) {
+	List temp = malloc(sizeof(ListObj));
+	temp -> front = NULL;
+	temp -> cursor = NULL;
+	temp -> back = NULL;
+	temp -> length = 0;
+	temp -> index = -1;
+	return temp;
+}
+
+void freeNode(Node *temp) {
+    if (temp != NULL && *temp != NULL) {
+        free(*temp);
+        *temp = NULL;
+    }
+}
+
+void freeList (List* temp) {
+	if (temp != NULL && *temp != NULL) {
+		Node tempNode = (*temp) -> front;
+		while (tempNode != NULL) {
+			Node tempNode2 = tempNode;
+			tempNode = tempNode -> next;
+			free(tempNode2);
+		}
+		free(*temp);
+		*temp = NULL;
+	}
+}

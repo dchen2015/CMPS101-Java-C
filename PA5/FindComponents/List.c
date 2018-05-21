@@ -1,0 +1,344 @@
+//Jason Chen
+//Jadchen 1467583
+//PA5
+
+#include <stdlib.h>
+#include <stdio.h>
+#include "List.h"
+
+typedef struct NodeObj {
+	struct NodeObj* next;
+	struct NodeObj* prev;
+	int data;
+} NodeObj;
+
+typedef NodeObj* Node;
+
+typedef struct ListObj {
+	Node front;
+	Node cursor;
+	Node back;
+	int index;
+	int length;
+} ListObj;
+
+Node newNode(int data) {
+    Node temp = malloc(sizeof(NodeObj));
+    temp -> data = data;
+    temp -> prev = NULL;
+    temp -> next = NULL;
+    return (temp);
+}
+
+void freeNode(Node *temp) {
+    if (temp != NULL && *temp != NULL) {
+        free(*temp);
+        *temp = NULL;
+    }
+}
+
+// Constructors-Destructors ----------------------------------------------------
+List newList (void) {
+	List temp = malloc(sizeof(ListObj));
+	temp -> front = NULL;
+	temp -> cursor = NULL;
+	temp -> back = NULL;
+	temp -> length = 0;
+	temp -> index = -1;
+	return temp;
+}
+
+void freeList (List* temp) {
+	if (temp != NULL && *temp != NULL) {
+		Node tempNode = (*temp) -> front;
+		while (tempNode != NULL) {
+			Node tempNode2 = tempNode;
+			tempNode = tempNode -> next;
+			free(tempNode2);
+		}
+		free(*temp);
+		*temp = NULL;
+	}
+}
+
+
+//Access Functions -----------------------------------------------------------
+
+// Returns the number of elements in this List.
+int length(List L) {
+    return L -> length;
+}
+
+// If cursor is defined, returns the index of the cursor element,
+// otherwise returns -1.
+int index(List L) {
+	if (L -> cursor != NULL) {
+		return L -> index;
+	} else {
+		return -1;
+	}
+}
+
+// Returns front element. Pre: length()>0
+int front(List L) {
+    if (L -> length > 0) {
+        return L -> front -> data;
+    } else {
+    	printf("List Error: List is empty\n");
+    	exit(1);
+    }
+}
+
+// Returns back element. Pre: length()>0
+int back(List L) {
+    if (L -> length > 0) {
+        return L -> back -> data;
+    } else {
+    	printf("List Error: List is empty\n");
+    	exit(1);
+    }
+}
+
+// Returns cursor element. Pre: length()>0, index()>=0
+//otherwise return the cursor element
+int get(List L) {
+    if (L -> length < 1) {
+    	printf("List Error: List is empty\n");
+    	exit(1);
+    } else
+    if (L -> index < 0) {
+    	printf("List Error: Undefined index\n");
+		exit(1);
+    } else
+    return L -> cursor -> data;
+}
+
+// Returns true if and only if this List and L are the same
+int equals (List L1, List L2) {
+	Node temp1 = L1 -> front;
+	Node temp2 = L2 -> front;
+	int equality = 1;
+
+	if(L1 -> length == L2 -> length) {
+		while (equality == 1 && temp1 != NULL && temp2 != NULL) {
+			if (temp1 -> data != temp2 -> data) {
+				equality = 0;
+			}
+			temp1 = temp1 -> next;
+			temp2 = temp2 -> next;
+		}
+		return equality;
+	}
+	return 0;
+}
+
+// Manipulation procedures ----------------------------------------------------
+
+// Resets this List to its original empty state.
+void clear(List L) {
+	if (L == NULL) {
+		printf("List Error: List is Empty");
+		exit(1);
+	}
+	Node tempNode = L -> front;
+	while (tempNode != NULL) {
+		Node tempNode2 = tempNode;
+		tempNode = tempNode -> next;
+		free(tempNode2);
+	}
+	L -> front = NULL;
+	L -> back = NULL;
+	L -> cursor = NULL;
+	L -> length = 0;
+	L -> index = -1;
+}
+
+// If List is non-empty, places the cursor under the front element,
+// otherwise does nothing.
+void moveFront(List L) {
+	if (L -> length > 0) {
+		L -> cursor = L -> front;
+		L -> index = 0;
+	}
+}
+
+// If List is non-empty, places the cursor under the back element,
+// otherwise does nothing.
+void moveBack(List L) {
+	if (L -> length > 0) {
+		L -> cursor = L -> back;
+		L -> index = L -> length - 1;
+	}
+}
+
+// If cursor is defined and not at front, moves cursor one step toward
+// front of this List, if cursor is defined and at front, cursor becomes
+// undefined, if cursor is undefined does nothing.
+void movePrev(List L) {
+	if (L -> cursor != NULL) {
+		if (L -> index != 0) {
+			L -> cursor = L -> cursor -> prev;
+			L -> index --;
+		} else {
+			L -> cursor = NULL;
+			L -> index = -1;
+		}
+	}
+}
+
+// If cursor is defined and not at back, moves cursor one step toward
+// back of this List, if cursor is defined and at back, cursor becomes
+// undefined, if cursor is undefined does nothing.
+void moveNext(List L) {
+	if (L -> cursor != NULL) {
+		if (L -> index != L -> length - 1) {
+			L -> cursor = L -> cursor -> next;
+			L -> index ++;
+		} else {
+			L -> cursor = NULL;
+			L -> index = -1;
+		}
+	}
+}
+
+// Insert new element into this List. If List is non-empty,
+void prepend(List L, int data) {
+	Node temp = newNode (data);
+	temp -> next = L -> front;
+	temp -> prev = NULL;
+	if (L -> front != NULL) {
+		L -> front -> prev = temp;
+	} else {
+		L -> back = temp;
+	}
+	L -> front = temp;
+	L -> index ++;
+	L -> length ++;
+}
+
+// Insert new element into this List. If List is non-empty,
+void append(List L, int data) {
+	Node temp = newNode (data);
+	temp -> next = NULL;
+	temp -> prev = L -> back;
+	if (L -> back != NULL) {
+		L -> back -> next = temp;
+	} else {
+		L -> front = temp;
+	}
+	L -> back = temp;
+	L -> length ++;
+}
+
+// Insert new element before cursor.
+void insertBefore(List L, int data) {
+	if (L -> length > 0 && L -> index >= 0) {
+		Node temp = newNode(data);
+		temp -> next = L -> cursor;
+		temp -> prev = L -> cursor -> prev;
+		if (L -> cursor -> prev != NULL) {
+			L -> cursor -> prev -> next = temp;
+		} else {
+			L -> front = temp;
+		}
+		L -> cursor -> prev = temp;
+	}
+	L -> index ++;
+	L -> length ++;
+}
+
+// Inserts new element after cursor.
+void insertAfter(List L, int data) {
+	if (L -> length > 0 && L -> index >= 0) {
+		Node temp = newNode(data);
+		temp -> next = L -> cursor -> next;
+		temp -> prev = L -> cursor;
+		if (L -> cursor -> next != NULL) {
+			L -> cursor -> next -> prev = temp;
+		} else {
+			L -> back = temp;
+		}
+		L -> cursor -> next = temp;
+	}
+	L -> length ++;
+}
+
+// Deletes the front element. Pre: length()>0
+void deleteFront(List L) {
+	Node temp = L -> front;
+	if (L -> cursor == L -> front) {
+		L -> cursor = NULL;
+		L -> index = -1;
+	}
+	if (L -> length > 1) {
+		L -> front = L -> front -> next;
+		L -> front -> prev = NULL;
+	} else {
+		L -> front = NULL;
+		L -> back = NULL;
+	}
+	L -> length --;
+	L -> index --;
+	freeNode(&temp);
+}
+
+// Deletes the back element. Pre: length()>0
+void deleteBack(List L) {
+	Node temp = L -> back;
+	if (L -> cursor == L -> back) {
+		L -> cursor = NULL;
+		L -> index = -1;
+	}
+	if (L -> length > 1) {
+		L -> back = L -> back -> prev;
+		L -> back -> next = NULL;
+	} else {
+		L -> front = NULL;
+		L -> back = NULL;
+	}
+	L -> length --;
+	freeNode(&temp);
+}
+
+// Deletes cursor element, making cursor undefined.
+void delete(List L) {
+	Node temp = L -> cursor;
+	if (L -> length > 0 && L -> index >= 0) {
+		if (L -> cursor == L -> front) {
+			deleteFront(L);
+		} else
+		if (L -> cursor == L -> back) {
+			deleteBack(L);
+		} else {
+			L -> cursor -> prev -> next = L -> cursor -> next;
+			L -> cursor -> next -> prev = L -> cursor -> prev;
+			L -> cursor = NULL;
+			L -> length --;
+			freeNode(&temp);
+		}
+	}
+}
+
+// Other operations -----------------------------------------------------------
+
+// Overrides Object's toString method. Returns a String
+// representation of this List consisting of a space
+// separated sequence of integers, with front on left.
+void printList(FILE* out, List L) {
+	for(Node i = L -> front; i != NULL; i = i -> next) {
+		fprintf(out, "%d ", i -> data);
+	}
+}
+
+// Returns a new List representing the same integer sequence as this
+// List. The cursor in the new list is undefined, regardless of the
+// state of the cursor in this List. This List is unchanged.
+List copyList(List L) {
+	List copy = newList();
+	Node temp = L -> front;
+	while (temp != NULL) {
+		append(copy, temp -> data);
+		temp = temp -> next;
+	}
+	return copy;
+}

@@ -1,0 +1,18 @@
+Google helped me alot on this assignment. I spent more than 5 hours on the Lex which is only about 50 lines long, because I didn't know about the fgets and strcpy. It took me a long time to figure them out. However, after I got the number of lines of the input and the content of input into arrays. It is just a simple translating Insertion sort from Java to C.
+
+List.c
+This java file holds all the constructor of the ADT list. It does all operations required in the pa1.pdf.
+
+List.h
+To be honest, I know what I should do with h file, which is put all the operation functions' heads into this file. But I don't know why I need to do that. 
+
+Lex.c
+This java file reads in the input file and convert it into array by reading each line of the file as strings. 
+Then it creats a ADT list containing the index of each String sorted in alphabetical order by insersion sort using the compareTo function. 
+Lastly, it prints the array in the order of the list into a output file. User will be able to see an alphabetically sorted array of strings expanded vertically (one string per line). 
+
+ListClient.c
+This java file helps testing if the List.java functions correctly by having a whole bunch of calculations using the operations provided by List.java, and compare the output with the answer of the ListClient. If matches, that can tell the programmer that the List.java is working correctly. 
+
+Makefile
+Makefile helps compiling the java files into class files. and also provide a clean function to clear all class files after using the the program. 
